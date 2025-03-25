@@ -1,12 +1,6 @@
-# Create T3 App
+# Darkmode ShadCN T3 NextAuth Prisma Template
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
-
-## What's next? How do I make an app with this?
-
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
-
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## Useful Resources
 
 - [Next.js](https://nextjs.org)
 - [NextAuth.js](https://next-auth.js.org)
@@ -15,15 +9,28 @@ If you are not familiar with the different technologies used in this project, pl
 - [Tailwind CSS](https://tailwindcss.com)
 - [tRPC](https://trpc.io)
 
-## Learn More
+## Auth
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+### Callback URL
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+https://example.com/api/auth/callback/google
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+### Email Verified
 
-## How do I deploy this?
+Google also returns a `email_verified` boolean property in the OAuth profile.
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+You can use this property to restrict access to people with verified accounts at a particular domain.
+
+**~/auth**
+```ts
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  callbacks: {
+    async signIn({ account, profile }) {
+      if (account.provider === "google") {
+        return profile.email_verified && profile.email.endsWith("@example.com")
+      }
+      return true // Do different verification for other providers that don't have `email_verified`
+    },
+  },
+})
+```
