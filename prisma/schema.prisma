@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url  	    = env("DATABASE_URL")
 }
 
 model Account {
@@ -80,7 +80,6 @@ model Report {
   verification_status VerificationStatus @default(UNVERIFIED) // New enum
   verifiedBy        String?
   pulse_relevance   Float             @default(0.0)
-  reportedBy        String?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
   user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)

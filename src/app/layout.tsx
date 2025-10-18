@@ -2,9 +2,11 @@ import "~/styles/globals.css";
 
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
+import { SessionProvider } from "next-auth/react";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { ThemeProvider } from "~/components/theme-provider";
+import { AblyProvider } from "~/components/AblyProvider";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -18,14 +20,18 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable}`} suppressHydrationWarning>
       <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <TRPCReactProvider>{children}</TRPCReactProvider>
-        </ThemeProvider>
+        <AblyProvider>
+        <SessionProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <TRPCReactProvider>{children}</TRPCReactProvider>
+          </ThemeProvider>
+        </SessionProvider>
+        </AblyProvider>
       </body>
     </html>
   );
