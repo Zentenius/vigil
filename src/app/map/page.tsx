@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { Button } from '~/components/ui/button';
 import { useAbly } from '~/components/AblyProvider';
+import { InteractiveMap } from '~/components/ui/interactive-map';
 
 interface Report {
   id: string;
@@ -15,7 +16,7 @@ interface Report {
   severity_level: number;
   description: string;
   createdAt: string;
-  user: {
+  user?: {
     name: string | null;
     email: string | null;
   };
@@ -49,7 +50,7 @@ function Map() {
     const onNewReport = (message: any) => {
       const newReport = message.data as Report;
       setReports(prev => [newReport, ...prev]);
-      setRealtimeMessages(prev => [...prev, `New report created: ${newReport.location_name || 'Unknown location'}`]);
+      setRealtimeMessages(prev => [...prev, `New report created: ${newReport.location_name || 'Unknown location'} by ${newReport.user?.name || newReport.user?.email || 'Unknown User'}`]);
     };
 
     // Subscribe to report updates
@@ -296,17 +297,17 @@ function Map() {
         </form>
       </div>
 
-      {/* Right side - Reports List */}
-      <div className="flex-1 p-6">
+      {/* Right side - Interactive Map */}
+      <div className="flex-1 flex flex-col">
         {/* Real-time Messages */}
-        <div className="mb-6">
+        <div className="p-4 border-b">
           <h3 className="text-lg font-semibold mb-2">Real-time Activity</h3>
-          <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg max-h-32 overflow-y-auto">
+          <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg max-h-24 overflow-y-auto">
             {realtimeMessages.length === 0 ? (
               <p className="text-sm text-gray-500">No activity yet...</p>
             ) : (
               <div className="space-y-1">
-                {realtimeMessages.slice(-5).map((message, index) => (
+                {realtimeMessages.slice(-3).map((message, index) => (
                   <div key={index} className="text-sm text-gray-700 dark:text-gray-300">
                     <span className="text-xs text-gray-500">{new Date().toLocaleTimeString()}</span> - {message}
                   </div>
@@ -316,52 +317,16 @@ function Map() {
           </div>
         </div>
 
-        <h2 className="text-2xl font-bold mb-6">Recent Reports ({reports.length})</h2>
-        
-        {loading ? (
-          <div className="text-center">Loading reports...</div>
-        ) : (
-          <div className="space-y-4 max-h-screen overflow-y-auto">
-            {reports.length === 0 ? (
-              <div className="text-gray-500 text-center">No reports found</div>
-            ) : (
-              reports.map((report) => (
-                <div key={report.id} className="bg-white p-4 border border-gray-200 rounded-lg shadow-sm">
-                  <div className="flex justify-between items-start mb-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(report.category)}`}>
-                      {report.category}
-                    </span>
-                    <span className={`font-medium ${getSeverityColor(report.severity_level)}`}>
-                      Severity: {report.severity_level}
-                    </span>
-                  </div>
-                  
-                  <h3 className="font-semibold mb-2">
-                    {report.location_name || `${report.latitude}, ${report.longitude}`}
-                  </h3>
-                  
-                  <p className="text-gray-700 mb-2">{report.description}</p>
-                  
-                  {report.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-2">
-                      {report.tags.map((tag, index) => (
-                        <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-                          #{tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  
-                  <div className="text-sm text-gray-500">
-                    <div>Reported by: {report.user.name || report.user.email}</div>
-                    <div>Date: {new Date(report.createdAt).toLocaleString()}</div>
-                    <div>Location: {report.latitude}, {report.longitude}</div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
+        {/* Interactive Map */}
+        <div className="flex-1">
+          {loading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">Loading map...</div>
+            </div>
+          ) : (
+            <InteractiveMap reports={reports} className="h-full" />
+          )}
+        </div>
       </div>
     </div>
   );

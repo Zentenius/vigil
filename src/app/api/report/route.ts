@@ -71,6 +71,14 @@ export async function POST(req: Request) {
         verification_status: VerificationStatus.UNVERIFIED,
         credibility_score: 50,
       },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
     });
     // Publish to Ably for real-time updates
     if (process.env.ABLY_SERVER_KEY) {
