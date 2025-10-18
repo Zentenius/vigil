@@ -20,8 +20,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable}`} suppressHydrationWarning>
       <body>
-        <AblyProvider>
+        
         <SessionProvider>
+          <AblyProvider>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
@@ -30,8 +31,8 @@ export default function RootLayout({
           >
             <TRPCReactProvider>{children}</TRPCReactProvider>
           </ThemeProvider>
+          </AblyProvider>
         </SessionProvider>
-        </AblyProvider>
       </body>
     </html>
   );
