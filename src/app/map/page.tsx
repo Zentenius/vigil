@@ -353,7 +353,7 @@ function Map() {
                   )}
                   
                   <div className="text-sm text-gray-500">
-                    <div>Reported by: {report.user.name || report.user.email}</div>
+                    <div>Reported by: {report.user?.name || report.user?.email}</div>
                     <div>Date: {new Date(report.createdAt).toLocaleString()}</div>
                     <div>Location: {report.latitude}, {report.longitude}</div>
                   </div>
