@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server"
 import { db } from "~/server/db"
 
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: Request, { params }: any) {
   try {
-    const reportId = await params.id
+    const reportId = params.id
 
     const report = await db.report.findUnique({
       where: { id: reportId },
