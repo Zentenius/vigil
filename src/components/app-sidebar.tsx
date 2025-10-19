@@ -79,7 +79,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <div className="flex items-center gap-2 px-4 py-2">
           <Eye className="h-6 w-6 text-green-500" />
-          <span className="font-semibold text-lg"></span>
+          <span className="font-semibold text-lg">Vigil</span>
         </div>
       </SidebarHeader>
       <SidebarContent>

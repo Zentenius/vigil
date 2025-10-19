@@ -246,7 +246,7 @@ export function ReportHazardForm({ open, onOpenChange }: ReportHazardFormProps) 
             max={5}
             step={1}
             value={[watch('severity_level') || 3]}
-            onValueChange={(value) => setValue('severity_level', value[0])}
+            onValueChange={(value) => setValue('severity_level', value[0] ?? 3)}
             className="w-full"
           />
           <div className="flex justify-between text-xs text-gray-500">
