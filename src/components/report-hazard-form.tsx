@@ -68,6 +68,7 @@ interface ReportHazardFormProps {
 
 export function ReportHazardForm({ open, onOpenChange }: ReportHazardFormProps) {
   const { data: session } = useSession()
+  const { isGuest } = require('~/hooks/use-guest-mode')()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [markerPosition, setMarkerPosition] = useState<[number, number]>(JAMAICA_CENTER)
   const [tags, setTags] = useState<string[]>([])
@@ -160,6 +161,11 @@ export function ReportHazardForm({ open, onOpenChange }: ReportHazardFormProps) 
   }
 
   const onSubmit = async (data: ReportFormData) => {
+    if (isGuest) {
+      toast.error('Guests cannot submit reports — please sign in')
+      return
+    }
+
     if (!session?.user?.id) {
       toast.error('You must be logged in to submit a report')
       return

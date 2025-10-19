@@ -29,6 +29,8 @@ import {
   useSidebar,
 } from "~/components/ui/sidebar"
 import { InsightModal } from "./insight-modal"
+import { useGuestMode } from "~/hooks/use-guest-mode"
+import { SignIn } from "~/components/auth/sign-in"
 
 // Navigation data matching your design
 const getNavData = (session: any) => ({
@@ -72,6 +74,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { isMobile } = useSidebar()
   const [insightOpen, setInsightOpen] = React.useState(false)
   const navData = getNavData(session)
+  const { isGuest, setGuest } = useGuestMode()
 
   return (
     <>
@@ -84,6 +87,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navData.navMain} />
+        {/* If guest mode, show a sign-in prompt */}
+        {isGuest && !session && (
+          <div className="px-4 mt-4">
+            <div className="text-xs text-muted-foreground mb-2">You are browsing as a guest</div>
+            <SignIn />
+            <div className="text-xs text-muted-foreground mt-2">
+              <button className="underline" onClick={() => setGuest(false)}>Exit guest mode</button>
+            </div>
+          </div>
+        )}
         
         {/* Insight Section */}
         <SidebarGroup className="mt-auto pt-8">

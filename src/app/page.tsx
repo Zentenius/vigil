@@ -7,10 +7,12 @@ import { SignIn } from "~/components/auth/sign-in";
 import { Navbar } from "~/components/navbar";
 import { useSession } from "next-auth/react"
 import { useEffect } from "react"
+import { useGuestMode } from "~/hooks/use-guest-mode"
 
 export default function Home() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { setGuest } = useGuestMode()
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -80,6 +82,10 @@ export default function Home() {
             size="lg"
             variant="outline"
             className="bg-transparent border-2 border-gray-600 hover:bg-[#2a2a2a] text-white rounded-full px-8 py-6 text-base font-medium transition-colors"
+            onClick={() => {
+              setGuest(true)
+              router.push('/dashboard')
+            }}
           >
             Continue as guest
           </Button>
