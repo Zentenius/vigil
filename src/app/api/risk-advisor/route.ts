@@ -4,14 +4,14 @@ import { z } from 'zod'
 import { db } from '~/server/db'
 
 // Allow streaming responses up to 30 seconds
-export const maxDuration = 30
+const maxDuration = 30
 
 const mistralClient = createMistral({
   apiKey: "olsuUo4qXzJcslHcWj66TtoM8lTdwqDm"
 })
 
 // Tool 1: Get current hazard reports
-export const getCurrentHazards = tool({
+const getCurrentHazards = tool({
   description: 'Get active hazard reports from the community system',
   inputSchema: z.object({
     category: z.string().optional().describe('Filter by hazard category (EMERGENCY, HAZARD, INFRASTRUCTURE, ENVIRONMENTAL, OTHER)'),
@@ -47,7 +47,7 @@ export const getCurrentHazards = tool({
 })
 
 // Tool 2: Get weather data using Open-Meteo
-export const getWeatherData = tool({
+const getWeatherData = tool({
   description: 'Get current weather for Jamaica locations. Useful for flood, storm, and weather-related hazards.',
   inputSchema: z.object({
     latitude: z.number().optional().default(18.1096).describe('Latitude (default Jamaica center)'),
@@ -83,7 +83,7 @@ export const getWeatherData = tool({
 })
 
 // Tool 3: Get seismic activity
-export const getSeismicActivity = tool({
+const getSeismicActivity = tool({
   description: 'Check recent earthquake activity near Jamaica. Critical for landslide and infrastructure hazard assessment.',
   inputSchema: z.object({
     days: z.number().optional().default(7).describe('Number of days to look back'),
@@ -117,7 +117,7 @@ export const getSeismicActivity = tool({
 })
 
 // Tool 4: Analyze hazard trends
-export const analyzeHazardTrends = tool({
+const analyzeHazardTrends = tool({
   description: 'Analyze trends in hazard reports over time periods',
   inputSchema: z.object({
     days: z.number().optional().default(7).describe('Number of days to analyze'),
