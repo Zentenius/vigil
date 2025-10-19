@@ -70,7 +70,7 @@ export default function Home() {
         <h1 className="text-7xl md:text-6xl font-bold text-white text-center max-w-5xl text-balance leading-tight lg:text-9xl px-px py-0 mb-px">
           Vigil
         </h1>
-        <p className="text-gray-400 text-sm md:text-lg mb-6 mt-3 text-center">Eyes Everywhere, Safety Anywhere</p>
+        <p className="text-gray-400 text-sm md:text-lg mb-6 mt-3 text-center">Eyes Everywhere, Saftey Anywhere</p>
 
         
 
