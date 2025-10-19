@@ -1,8 +1,8 @@
 
 import { NextResponse } from "next/server";
 import { db } from "~/server/db";
-import { ReportCategory, ReportStatus, VerificationStatus } from "@prisma/client";
 import { Realtime } from "ably";
+import { ReportCategory, ReportStatus, VerificationStatus } from "@prisma/client";
 
 export async function GET() {
   try {
@@ -80,11 +80,16 @@ export async function POST(req: Request) {
         },
       },
     });
-    // Publish to Ably for real-time updates
+    // Publish to Ably for real-time updates (do not block the HTTP response)
     if (process.env.ABLY_SERVER_KEY) {
+      try {
         const ably = new Realtime({ key: process.env.ABLY_SERVER_KEY });
         const channel = ably.channels.get('reports');
-        await channel.publish('report-created', report);
+        // fire-and-forget: don't await so slow/misconfigured Ably won't hang the request
+        channel.publish('report-created', report).catch((err: any) => console.error('Ably publish failed', err));
+      } catch (err) {
+        console.error('Ably init/publish error', err);
+      }
     }
 
     return NextResponse.json(report, { status: 201 });
