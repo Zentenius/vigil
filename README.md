@@ -4,6 +4,17 @@ Vigil is a real-time hazard alert and response platform that empowers Jamaican c
 
 This repository contains the Vigil web client and server code (Next.js + TypeScript + Prisma). It includes features for creating and viewing reports, community confirmations/disputes, a predictive map layer, and a guest mode for casual browsing.
 
+IMPORTANT — Test account
+------------------------
+You can use the following Google account to sign in and test authenticated flows immediately. This account is provided for development/testing only.
+
+Email: `vigilguest11@gmail.com`
+
+Password: `TestVigil123$`
+
+Please do NOT use this account for production data. Treat these credentials as shared test credentials and rotate them if they become public.
+
+
 Table of Contents
  - Features
  - Architecture
