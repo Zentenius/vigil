@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "sonner"
+import { useGuestMode } from "~/hooks/use-guest-mode"
 import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
@@ -68,7 +69,7 @@ interface ReportHazardFormProps {
 
 export function ReportHazardForm({ open, onOpenChange }: ReportHazardFormProps) {
   const { data: session } = useSession()
-  const { isGuest } = require('~/hooks/use-guest-mode')()
+  const { isGuest } = useGuestMode()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [markerPosition, setMarkerPosition] = useState<[number, number]>(JAMAICA_CENTER)
   const [tags, setTags] = useState<string[]>([])
