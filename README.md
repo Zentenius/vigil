@@ -1,4 +1,3 @@
-# Darkmode ShadCN T3 NextAuth db Template
 # Vigil
 
 Vigil is a real-time hazard alert and response platform that empowers Jamaican communities to report, verify, and act on safety threats instantly. By combining community-powered reporting, AI-driven risk assessment, and augmented reality visualization, Vigil delivers actionable safety guidance when every second counts — closing the critical gap between when dangers strike and when official alerts arrive.
