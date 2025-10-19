@@ -146,33 +146,52 @@ function Map({
     ref?: Ref<LeafletMap>
 }) {
     const [mapKey, setMapKey] = useState(() => 
-        typeof window !== 'undefined' ? Date.now() : 0
+        typeof window !== 'undefined' ? `map-container-${Date.now()}-${Math.random()}` : ''
     )
+    
+    const containerRef = useRef<HTMLDivElement>(null)
     
     // Force remount of map on client-side to prevent container reuse
     useEffect(() => {
-        if (typeof window !== 'undefined' && mapKey === 0) {
-            setMapKey(Date.now())
+        if (typeof window !== 'undefined' && !mapKey) {
+            setMapKey(`map-container-${Date.now()}-${Math.random()}`)
         }
-    }, [mapKey])
+        
+        // Cleanup function to prevent container reuse
+        return () => {
+          if (containerRef.current) {
+            try {
+              // Clear any existing leaflet container state
+              const container = containerRef.current.querySelector('.leaflet-container')
+              if (container && (container as any)._leaflet_id) {
+                (container as any)._leaflet_id = null
+              }
+            } catch (e) {
+              console.warn('Map container cleanup warning:', e)
+            }
+          }
+        }
+    }, [])
 
-    if (mapKey === 0) {
+    if (!mapKey) {
         return <div className="w-full h-full flex items-center justify-center">Loading map...</div>
     }
 
     return (
-        <LeafletMapContainer
-            key={mapKey}
-            zoom={zoom}
-            maxZoom={maxZoom}
-            attributionControl={false}
-            zoomControl={false}
-            className={cn(
-                "z-50 size-full min-h-96 flex-1 relative rounded-md",
-                className
-            )}
-            {...props}
-        />
+        <div ref={containerRef} className="w-full h-full">
+            <LeafletMapContainer
+                key={mapKey}
+                zoom={zoom}
+                maxZoom={maxZoom}
+                attributionControl={false}
+                zoomControl={false}
+                className={cn(
+                    "z-50 size-full min-h-96 flex-1 relative rounded-md",
+                    className
+                )}
+                {...props}
+            />
+        </div>
     )
 }
 
@@ -1032,7 +1051,7 @@ function MapDrawCircle({
 }: DrawOptions.CircleOptions) {
     return (
         <MapDrawShapeButton
-            drawMode="circ0le"
+            drawMode="circle"
             createDrawTool={(L, map) =>
                 new L.Draw.Circle(map, {
                     showRadius,

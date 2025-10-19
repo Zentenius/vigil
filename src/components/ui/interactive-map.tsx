@@ -4,8 +4,33 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { toast } from 'sonner'
 import { Toaster } from 'sonner'
 import { LatLngExpression } from 'leaflet'
-import { FlameIcon, DropletIcon, AlertTriangleIcon, BiohazardIcon, MapPin } from 'lucide-react'
+import { FlameIcon, DropletIcon, AlertTriangleIcon, BiohazardIcon, MapPin, Search } from 'lucide-react'
+
+// Custom hook to manage map container cleanup
+function useMapContainer() {
+  const [mapKey, setMapKey] = useState<string>('')
+  
+  useEffect(() => {
+    // Generate unique key for this map instance
+    const key = `map-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    setMapKey(key)
+  }, [])
+  
+  return { mapKey }
+}
+import { Input } from './input'
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './select'
+import { MapContainerWrapper } from './map-container-wrapper'
+import { useLeafletCleanup } from './use-leaflet-cleanup'
 import dynamic from 'next/dynamic'
+import { Button } from './button'
+import Link from 'next/link'
 
 // Dynamically import map components to avoid SSR issues
 const Map = dynamic(() => import('./map').then(mod => ({ default: mod.Map })), { 
@@ -31,6 +56,12 @@ const ToggleableHeatmapLayer = dynamic(() => import('./toggleable-heatmap-layer'
   ssr: false 
 })
 
+const PredictiveLayer = dynamic(() => import('./predictive-layer').then(mod => ({ default: mod.PredictiveLayer })), { 
+  ssr: false 
+})
+
+
+
 interface Report {
   id: string
   latitude: number
@@ -49,19 +80,29 @@ interface Report {
 
 interface InteractiveMapProps {
   reports: Report[]
+  predictions?: any[] // PredictionResult[]
   className?: string
 }
 
 // Jamaica coordinates as default
 const JAMAICA_CENTER: LatLngExpression = [18.009025, -76.777948]
 
-export function InteractiveMap({ reports, className = "" }: InteractiveMapProps) {
-  const [showHeatmap, setShowHeatmap] = useState(true)
+export function InteractiveMap({ reports, predictions = [], className = "" }: InteractiveMapProps) {
+  const [showHeatmap, setShowHeatmap] = useState(false)
+  const [showPredictions, setShowPredictions] = useState(false)
+  const [loadingPredictions, setLoadingPredictions] = useState(false)
   const [userLocation, setUserLocation] = useState<LatLngExpression | null>(null)
   const [mapCenter, setMapCenter] = useState<LatLngExpression>(JAMAICA_CENTER)
   const [isClient, setIsClient] = useState(false)
-  const [mapKey, setMapKey] = useState(0)
+  const { mapKey } = useMapContainer()
   const mapRef = useRef<any>(null)
+  const [searchText, setSearchText] = useState('')
+  const [selectedSeverity, setSelectedSeverity] = useState<string>('all')
+  const [selectedLayer, setSelectedLayer] = useState<string>('none')
+  const [displayedPredictions, setDisplayedPredictions] = useState<any[]>([])
+
+  // Use the cleanup hook to prevent container reinitialization
+  useLeafletCleanup(`map-container-${mapKey}`)
 
   // Map report categories to hazard types with colors and icons
   const hazardTypes = [
@@ -128,12 +169,70 @@ export function InteractiveMap({ reports, className = "" }: InteractiveMapProps)
     }))
   )
 
-  // Force client-side only rendering
+  // Force client-side only rendering and handle map cleanup
   useEffect(() => {
     setIsClient(true)
-    // Force a unique map key to prevent container reuse
-    setMapKey(Date.now())
+    
+    // Cleanup function to ensure proper unmounting
+    return () => {
+      // Clean up any existing map instances
+      if (mapRef.current) {
+        try {
+          mapRef.current.off()
+          mapRef.current.remove()
+          mapRef.current = null
+        } catch (e) {
+          // Ignore cleanup errors
+          console.warn('Map cleanup error:', e)
+        }
+      }
+    }
   }, [])
+
+  // Sync selected layer to heatmap/predictions visibility and fetch on demand
+  useEffect(() => {
+    if (selectedLayer === 'heatmap') {
+      setShowHeatmap(true)
+      setShowPredictions(false)
+    } else if (selectedLayer === 'predictive') {
+      setShowHeatmap(false)
+      setShowPredictions(true)
+      // Fetch predictions on demand if not already loaded
+      if (displayedPredictions.length === 0 && !loadingPredictions) {
+        const center = Array.isArray(mapCenter) ? mapCenter : [mapCenter.lat, mapCenter.lng]
+        fetchPredictionsOnDemand(center[0], center[1])
+      }
+    } else if (selectedLayer === 'none') {
+      setShowHeatmap(false)
+      setShowPredictions(false)
+    }
+  }, [selectedLayer])
+
+  // Fetch predictions from the parent predictions prop when they change
+  useEffect(() => {
+    if (predictions.length > 0) {
+      setDisplayedPredictions(predictions)
+    }
+  }, [predictions])
+
+  // Function to fetch predictions on demand
+  const fetchPredictionsOnDemand = async (lat: number, lng: number) => {
+    try {
+      setLoadingPredictions(true)
+      const response = await fetch(
+        `/api/predictions/nearby?lat=${lat}&lng=${lng}&radius=10000`
+      )
+      if (response.ok) {
+        const data = await response.json()
+        setDisplayedPredictions(data.predictions || [])
+        console.log(`🔮 Loaded ${data.predictions?.length || 0} AI predictions`)
+      }
+    } catch (error) {
+      console.error('Failed to fetch predictions:', error)
+    } finally {
+      setLoadingPredictions(false)
+    }
+  }
 
   // Request user location on component mount
   useEffect(() => {
@@ -197,7 +296,7 @@ export function InteractiveMap({ reports, className = "" }: InteractiveMapProps)
   }, [])
 
   // Don't render on server or before client is ready
-  if (!isClient) {
+  if (!isClient || typeof window === 'undefined') {
     return (
       <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded-lg">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -209,10 +308,12 @@ export function InteractiveMap({ reports, className = "" }: InteractiveMapProps)
     <>
       <Toaster position="top-right" />
       <div className={`flex flex-col h-full ${className}`}>
-        {/* Toggle Controls */}
+        {/* Toggle Controls
         <div className="mb-4 flex gap-4 p-4">
           <button
-            onClick={() => setShowHeatmap(!showHeatmap)}
+            onClick={() => {
+              setSelectedLayer(prev => (prev === 'heatmap' ? 'none' : 'heatmap'))
+            }}
             className={`px-4 py-2 rounded-md transition-colors ${
               showHeatmap 
                 ? 'bg-red-500 text-white hover:bg-red-600' 
@@ -221,7 +322,7 @@ export function InteractiveMap({ reports, className = "" }: InteractiveMapProps)
           >
             {showHeatmap ? '🔥 Hide Hazard Heatmap' : '📊 Show Hazard Heatmap'}
           </button>
-        </div>
+        </div> */}
 
         {/* User Location Display */}
         {userLocation && (
@@ -229,15 +330,69 @@ export function InteractiveMap({ reports, className = "" }: InteractiveMapProps)
             📍 Your location: {Array.isArray(userLocation) ? `${userLocation[0].toFixed(4)}, ${userLocation[1].toFixed(4)}` : 'Unknown'}
           </div>
         )}
-        
-        <div className="flex-1 border rounded-lg overflow-hidden mx-4">
-          <Map 
-            key={mapKey}
-            center={mapCenter}
-            className="w-full h-full z-0" 
-            zoom={12}
-            ref={mapRef}
-          >
+
+        <div className="flex-1 border rounded-lg overflow-hidden mx-4 relative">
+          {/* Absolute controls over the map */}
+          <div className="absolute top-4 z-30 w-full flex left-[5.5rem] max-w-2xl">
+            <div className="backdrop-blur-sm bg-white/40 border border-white/30 rounded-full shadow-md p-2 flex items-center gap-2">
+              {/* Search input (not functional yet) */}
+              <div className="flex-1 relative text-white">
+                <Input
+                  value={searchText}
+                  onChange={(e) => setSearchText((e.target as HTMLInputElement).value)}
+                  placeholder="Search"
+                  className="bg-transparent rounded-full placeholder:text-white/80 text-white border border-white/30"
+                />
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-white/90" />
+              </div>
+
+              {/* Severity select */}
+              <div className="w-40">
+                <Select value={selectedSeverity} onValueChange={(val) => setSelectedSeverity(val)}>
+                  <SelectTrigger className="bg-transparent rounded-full border-white/30 text-white">
+                    <SelectValue placeholder="Severity">{selectedSeverity}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="critical">Critical</SelectItem>
+                    <SelectItem value="moderate">Moderate</SelectItem>
+                    <SelectItem value="safe">Safe</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Layers select */}
+              <div className="w-44">
+                <Select value={selectedLayer} onValueChange={(val) => setSelectedLayer(val)}>
+                  <SelectTrigger className="bg-transparent rounded-full border-white/30 text-white">
+                    <SelectValue placeholder="Layers">{selectedLayer === 'heatmap' ? 'Heatmap' : selectedLayer === 'predictive' ? 'Predictive' : undefined}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="heatmap">Heatmap</SelectItem>
+                    <SelectItem value="predictive">Predictive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+            <Button asChild className="absolute left-4 bottom-4 z-1000 rounded-md backdrop-blur-sm bg-white/40 border border-white/30 py-2 shadow-md text-sm font-medium text-white transition">
+              <Link href={"/ar"}>Go to Ar</Link>
+            </Button>
+
+          <MapContainerWrapper className="w-full h-full">
+            <div 
+              id={`map-container-${mapKey}`}
+              className="w-full h-full"
+            >
+              {mapKey && (
+                <Map 
+                  key={mapKey}
+                  center={mapCenter}
+                  className="w-full h-full z-0" 
+                  zoom={12}
+                  ref={mapRef}
+                >
             <MapLayers 
               defaultTileLayer="Default"
               defaultLayerGroups={processedHazardTypes.map(type => type.displayName)}
@@ -290,11 +445,11 @@ export function InteractiveMap({ reports, className = "" }: InteractiveMapProps)
               enableHighAccuracy={false}
             />
             
-            {/* Heatmap layer for hazard density */}
-            {allHazardReports.length > 0 && (
+            {/* Heatmap layer for hazard density (mount only when visible) */}
+            {showHeatmap && allHazardReports.length > 0 && (
               <ToggleableHeatmapLayer 
                 points={allHazardReports}
-                visible={showHeatmap}
+                visible={true}
                 options={{
                   radius: 25,
                   blur: 15,
@@ -313,8 +468,25 @@ export function InteractiveMap({ reports, className = "" }: InteractiveMapProps)
               />
             )}
             
+            {/* AI Predictive Layer - Simple circle visualizations */}
+            {showPredictions && displayedPredictions.length > 0 && (
+              <PredictiveLayer 
+                predictions={displayedPredictions}
+                isVisible={true}
+                onPredictionClick={(pred) => {
+                  toast.info(`🔮 Prediction: ${pred.type.toUpperCase()}\n${pred.description}`, {
+                    duration: 5000
+                  })
+                }}
+              />
+            )}
+            
             <MapZoomControl />
-          </Map>
+                </Map>
+              )}
+            </div>
+            </MapContainerWrapper>
+
         </div>
       </div>
     </>

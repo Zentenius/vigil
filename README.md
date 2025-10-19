@@ -1,10 +1,10 @@
-# Darkmode ShadCN T3 NextAuth Prisma Template
+# Darkmode ShadCN T3 NextAuth db Template
 
 ## Useful Resources
 
 - [Next.js](https://nextjs.org)
 - [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
+- [db](https://db.io)
 - [Drizzle](https://orm.drizzle.team)
 - [Tailwind CSS](https://tailwindcss.com)
 - [tRPC](https://trpc.io)

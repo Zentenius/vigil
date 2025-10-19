@@ -1,24 +1,25 @@
-import { PrismaClient, ReportCategory, ReportStatus } from '@prisma/client'
+import {PrismaClient, ReportCategory, ReportStatus } from '@prisma/client'
 
-const prisma = new PrismaClient()
+const db = new PrismaClient()
 
 async function main() {
-  // Your base coordinates in Jamaica
-  const baseLatitude = 18.009025
-  const baseLongitude = -76.777948
+  // Base coordinates you provided (Jamaica)
+  // Latitude: 18.008988 / N 18° 0' 32.355''
+  // Longitude: -76.777986 / W 76° 46' 40.7
+  const baseLatitude = 18.008988
+  const baseLongitude = -76.777986
   
   // User IDs you provided
   const userIds = ['cmgwlsnhx00003pp0cuxkbnm6', 'cmgwj7b990000dinbpldbkr8s']
   
-  // Function to generate random coordinates near your location
-  function getRandomNearbyCoordinates(baseLat: number, baseLng: number, radiusKm: number = 5) {
-    const radiusInDegrees = radiusKm / 111.32 // Convert km to degrees (approximate)
-    
-    const lat = baseLat + (Math.random() - 0.5) * 2 * radiusInDegrees
-    const lng = baseLng + (Math.random() - 0.5) * 2 * radiusInDegrees
-    
-    return { lat: parseFloat(lat.toFixed(6)), lng: parseFloat(lng.toFixed(6)) }
-  }
+  // Deterministic nearby coordinates for reliable seeding during testing
+  const nearbyPoints = [
+    { lat: baseLatitude + 0.000100, lng: baseLongitude + 0.000050 }, // ~11m NE
+    { lat: baseLatitude - 0.000120, lng: baseLongitude - 0.000030 }, // ~13m SW
+    { lat: baseLatitude + 0.000200, lng: baseLongitude - 0.000080 }, // ~22m NNW
+    { lat: baseLatitude - 0.000220, lng: baseLongitude + 0.000120 }, // ~24m SSE
+    { lat: baseLatitude + 0.000050, lng: baseLongitude + 0.000200 }, // ~5m NE
+  ]
   
   // Sample report data
   const reportData: { location_name: string; category: ReportCategory; tags: string[]; severity_level: number; description: string }[] = [
@@ -131,12 +132,14 @@ async function main() {
   
   console.log('🌱 Starting to seed reports...')
   
-  // Create reports with random nearby coordinates
+  // Create reports using nearby deterministic coordinates in rotation to ensure predictable test data
+  let idx = 0
   for (const report of reportData) {
-    const coordinates = getRandomNearbyCoordinates(baseLatitude, baseLongitude, 10) // Within 10km
-    const randomUserId = userIds[Math.floor(Math.random() * userIds.length)]
+    const coordinates = nearbyPoints[idx % nearbyPoints.length]!
+    idx += 1
+    const randomUserId = userIds[idx % userIds.length]
     
-    const createdReport = await prisma.report.create({
+    const createdReport = await db.report.create({
       data: {
         latitude: coordinates.lat,
         longitude: coordinates.lng,
@@ -156,16 +159,16 @@ async function main() {
   console.log('🎉 Seeding completed!')
   
   // Display summary
-  const totalReports = await prisma.report.count()
+  const totalReports = await db.report.count()
   console.log(`📊 Total reports in database: ${totalReports}`)
 }
 
 main()
   .then(async () => {
-    await prisma.$disconnect()
+    await db.$disconnect()
   })
   .catch(async (e) => {
     console.error(e)
-    await prisma.$disconnect()
+    await db.$disconnect()
     process.exit(1)
   })
