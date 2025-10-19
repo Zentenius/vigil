@@ -232,9 +232,9 @@ export default function Dashboard() {
         
         <div className="flex-1 space-y-4 p-4 pt-0">
           {/* Top Section with Map and Stats */}
-          <div className="grid gap-4 lg:grid-cols-3 min-h-[80vh]">
-            {/* Map Section - Takes 2 columns */}
-            <div className="lg:col-span-2">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-3 min-h-[60vh]">
+            {/* Map Section - Takes 2 columns on md+ */}
+            <div className="md:col-span-2">
               {/* <Card className="h-full">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
@@ -290,22 +290,22 @@ export default function Dashboard() {
                 </CardContent>
               </Card> */}
               {loading ? (
-                          <div className="flex items-center justify-center h-full">
-                            <div className="text-center">Loading map...</div>
-                          </div>
-                        ) : (
-                          <LeafletFix className="h-full relative">
-                            <InteractiveMap 
-                              reports={reports} 
-                              predictions={predictions}
-                              className="h-full" 
-                            />
-                          </LeafletFix>
-                        )}
+                <div className="flex items-center justify-center h-[50vh] md:h-full">
+                  <div className="text-center">Loading map...</div>
+                </div>
+              ) : (
+                <LeafletFix className="relative h-[50vh] md:h-[72vh] lg:h-[72vh]">
+                  <InteractiveMap 
+                    reports={reports} 
+                    predictions={predictions}
+                    className="h-full" 
+                  />
+                </LeafletFix>
+              )}
             </div>
 
             {/* Quick Stats - Takes 1 column */}
-            <div className="flex flex-col h-full space-y-4">
+            <div className="flex flex-col space-y-4">
               <Card className="shrink-0">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium">Quick Stats</CardTitle>
@@ -353,7 +353,7 @@ export default function Dashboard() {
                       </Select>
                     </div>
                 </CardHeader>
-                <CardContent className="h-[400px] space-y-3  overflow-y-auto">
+                <CardContent className="h-[300px] md:h-[400px] space-y-3 overflow-y-auto">
                   {(filteredReports.length ? filteredReports : reports).map((item) => {
                     const displayName = item.user?.name || item.user?.email || 'Anonymous'
                     const initials = item.user?.name

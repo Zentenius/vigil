@@ -333,23 +333,23 @@ export function InteractiveMap({ reports, predictions = [], className = "" }: In
 
         <div className="flex-1 border rounded-lg overflow-hidden mx-4 relative">
           {/* Absolute controls over the map */}
-          <div className="absolute top-4 z-30 w-full flex left-[5.5rem] max-w-2xl">
-            <div className="backdrop-blur-sm bg-white/40 border border-white/30 rounded-full shadow-md p-2 flex items-center gap-2">
+            <div className="absolute top-4 z-30 left-4 right-4 flex justify-center">
+              <div className="backdrop-blur-sm bg-white/40 border border-white/30 rounded-lg md:rounded-full shadow-md p-2 flex flex-col md:flex-row items-center gap-2 max-w-full md:max-w-2xl mx-auto">
               {/* Search input (not functional yet) */}
-              <div className="flex-1 relative text-white">
+                <div className="flex-1 relative text-white min-w-0">
                 <Input
                   value={searchText}
                   onChange={(e) => setSearchText((e.target as HTMLInputElement).value)}
                   placeholder="Search"
-                  className="bg-transparent rounded-full placeholder:text-white/80 text-white border border-white/30"
+                    className="bg-transparent rounded-full placeholder:text-white/80 text-white border border-white/30 min-w-0 w-full"
                 />
                 <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-white/90" />
               </div>
 
               {/* Severity select */}
-              <div className="w-40">
+                <div className="w-full md:w-40">
                 <Select value={selectedSeverity} onValueChange={(val) => setSelectedSeverity(val)}>
-                  <SelectTrigger className="bg-transparent rounded-full border-white/30 text-white">
+                    <SelectTrigger className="bg-transparent rounded-full border-white/30 text-white w-full">
                     <SelectValue placeholder="Severity">{selectedSeverity}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
@@ -362,18 +362,18 @@ export function InteractiveMap({ reports, predictions = [], className = "" }: In
               </div>
 
               {/* Layers select */}
-              <div className="w-44">
-                <Select value={selectedLayer} onValueChange={(val) => setSelectedLayer(val)}>
-                  <SelectTrigger className="bg-transparent rounded-full border-white/30 text-white">
-                    <SelectValue placeholder="Layers">{selectedLayer === 'heatmap' ? 'Heatmap' : selectedLayer === 'predictive' ? 'Predictive' : undefined}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="heatmap">Heatmap</SelectItem>
-                    <SelectItem value="predictive">Predictive</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                <div className="w-full md:w-44">
+                  <Select value={selectedLayer} onValueChange={(val) => setSelectedLayer(val)}>
+                    <SelectTrigger className="bg-transparent rounded-full border-white/30 text-white w-full">
+                      <SelectValue placeholder="Layers">{selectedLayer === 'heatmap' ? 'Heatmap' : selectedLayer === 'predictive' ? 'Predictive' : undefined}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="heatmap">Heatmap</SelectItem>
+                      <SelectItem value="predictive">Predictive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
             </div>
           </div>
             <Button asChild className="absolute left-4 bottom-4 z-1000 rounded-md backdrop-blur-sm bg-white/40 border border-white/30 py-2 shadow-md text-sm font-medium text-white transition">

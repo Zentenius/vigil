@@ -13,7 +13,7 @@ import { calculateDistance } from '../utils/calculations'
 
 // Create Mistral client with API key
 const mistralClient = createMistral({
-  apiKey: "olsuUo4qXzJcslHcWj66TtoM8lTdwqDm"
+  apiKey: process.env.MISTRAL_API_KEY
 })
 
 export interface EnhancedReportData {

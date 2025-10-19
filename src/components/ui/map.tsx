@@ -650,10 +650,14 @@ function MapPopup({
 }: Omit<PopupProps, "content"> & { ref?: Ref<Popup> }) {
     return (
         <LeafletPopup
+            // Make popups responsive and avoid fixed widths so they don't clip at map edges.
             className={cn(
-                "bg-popover text-popover-foreground animate-in fade-out-0 fade-in-0 zoom-out-95 zoom-in-95 slide-in-from-bottom-2 z-50 w-72 rounded-md border p-4 font-sans shadow-md outline-hidden",
+                "bg-popover text-popover-foreground animate-in fade-out-0 fade-in-0 zoom-out-95 zoom-in-95 slide-in-from-bottom-2 z-50 w-auto max-w-[20rem] md:max-w-[28rem] rounded-md border p-4 font-sans shadow-md outline-hidden overflow-auto break-words",
                 className
             )}
+            // sensible defaults; callers can override via props
+            keepInView={true}
+            autoPan={true}
             {...props}
         />
     )

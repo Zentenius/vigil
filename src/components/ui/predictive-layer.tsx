@@ -95,8 +95,17 @@ export function PredictiveLayer({
             }}
             className={`fill-[${typeColor}] stroke-[${typeColor}] stroke-1`}
           >
-            <MapPopup>
-              <PredictionPopup prediction={prediction} />
+            <MapPopup
+              // keep popups in view and add a slight offset so the pointer doesn't clip
+              offset={[0, -10]}
+              keepInView={true}
+              autoClose={false}
+              closeOnClick={false}
+            >
+              <div className="relative">
+                <div className="absolute -top-2 left-1/2 -translate-x-1/2 h-3 w-3 rotate-45 bg-popover border" />
+                <PredictionPopup prediction={prediction} />
+              </div>
             </MapPopup>
           </MapCircle>
         )

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useSession } from "next-auth/react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -74,6 +74,7 @@ export function ReportHazardForm({ open, onOpenChange }: ReportHazardFormProps) 
   const [tagInput, setTagInput] = useState('')
   const [mapCenter, setMapCenter] = useState<[number, number]>(JAMAICA_CENTER)
   const [isMobile, setIsMobile] = useState(false)
+  const tagInputRef = useRef<HTMLInputElement>(null)
 
   const {
     register,
@@ -104,6 +105,13 @@ export function ReportHazardForm({ open, onOpenChange }: ReportHazardFormProps) 
     setValue('latitude', markerPosition[0])
     setValue('longitude', markerPosition[1])
   }, [markerPosition, setValue])
+
+  // Keep tags input focused when tags change
+  useEffect(() => {
+    if (tagInputRef.current && document.activeElement !== tagInputRef.current) {
+      tagInputRef.current.focus()
+    }
+  }, [tags])
 
   const handleMapClick = useCallback((event: any) => {
     if (event.latlng) {
@@ -298,10 +306,12 @@ export function ReportHazardForm({ open, onOpenChange }: ReportHazardFormProps) 
           ))}
         </div>
         <Input
+          ref={tagInputRef}
           value={tagInput}
           onChange={(e) => setTagInput(e.target.value)}
           onKeyDown={handleKeyPress}
           placeholder="Add tags (press Enter or comma to add)"
+          autoFocus
         />
       </div>
 
