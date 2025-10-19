@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"
 import { MapPin, Clock, AlertCircle, Navigation, List, CheckCircle, AlertTriangle, ChevronLeft } from "lucide-react"
 import { useRouter, useParams } from "next/navigation"
 import { useState, useEffect } from "react"
+import ConfirmDisputeButtons from "./confirm-dispute-buttons"
 import dynamic from "next/dynamic"
 import { GreenMapMarkerIcon } from "~/components/ui/green-map-marker-icon"
 
@@ -42,12 +43,14 @@ interface Report {
     email: string | null
     image: string | null
   }
+  credibility_score?: number
 }
 
 export default function Page() {
   const router = useRouter()
   const params = useParams()
   const [report, setReport] = useState<Report | null>(null)
+  const [displayCredibility, setDisplayCredibility] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [mapKey, setMapKey] = useState<string>(`map-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`)
@@ -63,6 +66,7 @@ export default function Page() {
         }
         const data = await response.json()
         setReport(data)
+        if (typeof data.credibility_score === 'number') setDisplayCredibility(data.credibility_score)
         // Regenerate map key when report loads to ensure fresh map container
         setMapKey(`map-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`)
       } catch (err) {
@@ -283,14 +287,7 @@ export default function Page() {
             <div className="mb-6">
               <h3 className="mb-3 text-sm font-semibold text-muted-foreground">Quick Actions</h3>
               <div className="space-y-2">
-                <Button className="w-full justify-start gap-2 bg-[var(--vigil-teal)] text-background hover:bg-[var(--vigil-teal)]/90">
-                  <CheckCircle className="h-4 w-4" />
-                  Confirm
-                </Button>
-                <Button variant="destructive" className="w-full justify-start gap-2">
-                  <AlertTriangle className="h-4 w-4" />
-                  Dispute
-                </Button>
+                  <ConfirmDisputeButtons reportId={report.id} displayCredibility={displayCredibility} setDisplayCredibility={setDisplayCredibility} />
               </div>
             </div>
 
