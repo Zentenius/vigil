@@ -30,6 +30,7 @@ import {
   DrawerTitle,
 } from "~/components/ui/drawer"
 import { Badge } from "~/components/ui/badge"
+import { Slider } from "~/components/ui/slider"
 import { MapPin, Upload, X } from "lucide-react"
 import dynamic from "next/dynamic"
 
@@ -238,18 +239,36 @@ export function ReportHazardForm({ open, onOpenChange }: ReportHazardFormProps) 
       {/* Severity Level */}
       <div className="space-y-2">
         <Label htmlFor="severity">Severity Level</Label>
-        <Select onValueChange={(value) => setValue('severity_level', parseInt(value))}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select severity" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="1">1 - Low Risk</SelectItem>
-            <SelectItem value="2">2 - Minor</SelectItem>
-            <SelectItem value="3">3 - Moderate</SelectItem>
-            <SelectItem value="4">4 - High Risk</SelectItem>
-            <SelectItem value="5">5 - Critical</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="space-y-3">
+          <Slider
+            id="severity"
+            min={1}
+            max={5}
+            step={1}
+            value={[watch('severity_level') || 3]}
+            onValueChange={(value) => setValue('severity_level', value[0])}
+            className="w-full"
+          />
+          <div className="flex justify-between text-xs text-gray-500">
+            <span>1 - Low Risk</span>
+            <span className="font-semibold text-gray-700">
+              {watch('severity_level') ? `Level ${watch('severity_level')}` : 'Level 3'}
+            </span>
+            <span>5 - Critical</span>
+          </div>
+          <div className="flex gap-1">
+            {[1, 2, 3, 4, 5].map((level) => (
+              <div
+                key={level}
+                className={`flex-1 h-2 rounded-full transition-colors ${
+                  level <= (watch('severity_level') || 3)
+                    ? 'bg-red-500'
+                    : 'bg-gray-200'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
         {errors.severity_level && (
           <p className="text-sm text-red-500">{errors.severity_level.message}</p>
         )}
@@ -282,7 +301,6 @@ export function ReportHazardForm({ open, onOpenChange }: ReportHazardFormProps) 
           value={tagInput}
           onChange={(e) => setTagInput(e.target.value)}
           onKeyDown={handleKeyPress}
-          onBlur={addTag}
           placeholder="Add tags (press Enter or comma to add)"
         />
       </div>

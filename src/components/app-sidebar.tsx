@@ -8,6 +8,7 @@ import {
   Settings,
   HelpCircle,
   Eye,
+  Lightbulb,
   User,
 } from "lucide-react"
 import { useSession } from "next-auth/react"
@@ -20,7 +21,14 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
 } from "~/components/ui/sidebar"
+import { InsightModal } from "./insight-modal"
 
 // Navigation data matching your design
 const getNavData = (session: any) => ({
@@ -61,10 +69,13 @@ const getNavData = (session: any) => ({
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession()
+  const { isMobile } = useSidebar()
+  const [insightOpen, setInsightOpen] = React.useState(false)
   const navData = getNavData(session)
 
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <>
+      <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <div className="flex items-center gap-2 px-4 py-2">
           <Eye className="h-6 w-6 text-green-500" />
@@ -72,12 +83,27 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </div>
       </SidebarHeader>
       <SidebarContent>
-          <NavMain items={navData.navMain} />
+        <NavMain items={navData.navMain} />
+        
+        {/* Insight Section */}
+        <SidebarGroup className="mt-auto pt-8">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton onClick={() => setInsightOpen(true)} className="flex items-center gap-2 cursor-pointer bg-gray-900/50 hover:bg-gray-900 rounded-full px-4 py-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                <span className="text-sm font-medium">Insight</span>
+                <span className="ml-auto text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full border border-emerald-500/30">Safe</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={navData.user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
+    <InsightModal open={insightOpen} onOpenChange={setInsightOpen} />
+    </>
   )
 }

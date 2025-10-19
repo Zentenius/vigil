@@ -8,7 +8,7 @@ const ARView = dynamic(() => import('~/components/ArView'), {
     <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
       <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white mb-4"></div>
       <p className="text-lg">Loading LocAR...</p>
-      <p className="text-sm text-gray-300 mt-2">Pokemon Go style location-based AR</p>
+      <p className="text-sm text-gray-300 mt-2">Your Realtime Awareness</p>
     </div>
   )
 })

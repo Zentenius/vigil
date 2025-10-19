@@ -96,9 +96,14 @@ export function TypedMarkerClusterGroup({
 
     // Create markers and add them to cluster group
     reports.forEach((report, index) => {
-      // Create custom icon
+      // Create custom icon with color applied
+      let iconHtml = renderToString(icon)
+      // Replace stroke and fill colors in the SVG
+      iconHtml = iconHtml.replace(/stroke="[^"]*"/g, `stroke="${color}"`)
+      iconHtml = iconHtml.replace(/fill="[^"]*"/g, `fill="${color}"`)
+      
       const customIcon = L.divIcon({
-        html: renderToString(icon),
+        html: iconHtml,
         className: 'custom-marker-icon',
         iconSize: [24, 24],
         iconAnchor: [12, 12]

@@ -4,6 +4,7 @@ import React from "react";
 import { Button } from "../ui/button";
 import { cn } from "~/lib/utils";
 import Google from "../svg/google";
+import { ArrowUpRight } from "lucide-react";
 
 export function SignIn({
   children,
@@ -12,19 +13,20 @@ export function SignIn({
 }: React.ComponentProps<"button">) {
   return (
     <Button
+    size={"lg"}
       className={cn(
-        "bg-[#DB4437] text-white after:flex-1 hover:bg-[#DB4437]/90",
+        "bg-primary text-white hover:bg-primary/90  rounded-full px-8 py-6 text-base font-medium transition-colors",
         className,
       )}
-      onClick={() => signIn('google', { redirectTo: '/' })}
+      onClick={() => signIn('google', { redirectTo: '/dashboard' })}
       {...props}
     >
       {children ?? (
         <>
-          <span className="pointer-events-none me-2 flex-1">
-            <Google className="opacity-60 h-16 w-16" aria-hidden="true" />
+          Sign In
+          <span className="pointer-events-none ">
+            <ArrowUpRight className="opacity-60 h-16 w-16" aria-hidden="true" />
           </span>
-          Login with Google
         </>
       )}
     </Button>
